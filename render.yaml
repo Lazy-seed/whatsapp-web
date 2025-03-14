@@ -1,15 +1,15 @@
 services:
-  - name: whatsapp-bot
-    type: web
+  - type: web
+    name: whatsapp-web
     env: node
-    plan: free
-    region: india  # Change based on your location
+    region: oregon
     buildCommand: |
-      apt-get update && apt-get install -y libnss3
+      apt-get update
+      apt-get install -y chromium
       npm install
-    startCommand: "node server.js"
+    startCommand: node server.js
     envVars:
-      - key: PUPPETEER_SKIP_DOWNLOAD
-        value: "true"
       - key: CHROME_PATH
-        value: "/usr/bin/google-chrome"
+        value: /usr/bin/chromium
+      - key: PUPPETEER_SKIP_DOWNLOAD
+        value: true
