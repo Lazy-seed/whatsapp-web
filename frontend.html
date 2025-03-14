@@ -16,7 +16,7 @@
     <div id="chatHistory"></div>
     
     <script>
-        const socket = io('http://localhost:3000', { transports: ['websocket']});
+        const socket = io('https://whatsapp-web-h3ts.onrender.com/', { transports: ['websocket']});
 
         socket.on('qr', (qr) => {
             document.getElementById('qrCode').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qr)}`;

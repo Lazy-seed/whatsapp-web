@@ -1,78 +1,65 @@
-const cors = require('cors'); // Import CORS
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
+const express = require('express');
+const cors = require('cors');
 
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-    cors: {
-        origin: "*", // Allow all origins (change this in production)
-        methods: ["GET", "POST"]
-    }
-});
+const server = require('http').createServer(app);
+const io = require('socket.io')(server, { cors: { origin: "*" } });
 
-// Enable CORS for all routes
+const PORT = process.env.PORT || 3000;
+
 app.use(cors());
+app.use(express.json());
 
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-        headless: true,  // Open browser window (for debugging)
-        executablePath: require('puppeteer').executablePath(), // Use default Chromium path
+        headless: true,  // Run Puppeteer in headless mode (important for Render)
         args: [
             "--no-sandbox",
-            "--disable-setuid-sandbox"
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-accelerated-2d-canvas",
+            "--disable-gpu"
         ]
     }
 });
 
-
+// Generate QR Code
 client.on('qr', (qr) => {
-    console.log("QR Code received, scan it with your phone.");
+    console.log("Scan this QR code with WhatsApp:");
     io.emit('qr', qr);
 });
 
-client.on('ready', async () => {
-    console.log('Client is ready!');
+// When WhatsApp is ready
+client.on('ready', () => {
+    console.log('WhatsApp Web is ready!');
     io.emit('ready', 'WhatsApp Web is ready');
+});
 
-    // Fetch all chats
-    const chats = await client.getChats();
-    
-    let chatData = [];
-    for (let chat of chats) {
-        // Get the last 5 messages from each chat
-        const messages = await chat.fetchMessages({ limit: 5 });
+// Send Message API
+app.post('/send-message', async (req, res) => {
+    const { number, message } = req.body;
 
-        chatData.push({
-            id: chat.id._serialized, 
-            name: chat.name || chat.id.user,
-            messages: messages.map(msg => ({
-                from: msg.fromMe ? "You" : msg.author || msg.from,
-                body: msg.body,
-                timestamp: msg.timestamp
-            }))
-        });
+    if (!number || !message) {
+        return res.status(400).json({ error: "Please provide both number and message." });
     }
 
-    io.emit('chats', chatData); // Send chat history to frontend
+    const formattedNumber = number.includes('@c.us') ? number : `${number}@c.us`;
+
+    try {
+        await client.sendMessage(formattedNumber, message);
+        res.json({ success: true, message: `Message sent to ${number}` });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
-
-client.on('message', async (message) => {
-    console.log(`Message from ${message.from}: ${message.body}`);
-    io.emit('message', { from: message.from, body: message.body });
-});
-
+// Start WhatsApp client
 client.initialize();
 
-app.get('/', (req, res) => {
-    res.send('WhatsApp Web Bot Running...');
-});
-
-server.listen(3000, () => {
-    console.log('Server running on http://localhost:3000');
+// Start Server
+server.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
 });
