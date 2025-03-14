@@ -1,0 +1,15 @@
+services:
+  - name: whatsapp-bot
+    type: web
+    env: node
+    plan: free
+    region: india  # Change based on your location
+    buildCommand: |
+      apt-get update && apt-get install -y libnss3
+      npm install
+    startCommand: "node server.js"
+    envVars:
+      - key: PUPPETEER_SKIP_DOWNLOAD
+        value: "true"
+      - key: CHROME_PATH
+        value: "/usr/bin/google-chrome"
