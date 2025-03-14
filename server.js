@@ -16,7 +16,7 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
-        executablePath: process.env.CHROME_PATH || puppeteer.executablePath(), // Use system-installed Chrome
+        executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome-stable', // Use system-installed Chrome
         args: [
             "--no-sandbox",
             "--disable-setuid-sandbox",
