@@ -2,7 +2,7 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const express = require('express');
 const cors = require('cors');
-
+const puppeteer = require('puppeteer');
 const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server, { cors: { origin: "*" } });
@@ -15,7 +15,8 @@ app.use(express.json());
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-        headless: true,  // Run Puppeteer in headless mode (important for Render)
+        headless: true,
+        executablePath: "/opt/render/project/.render/chromium/chrome",
         args: [
             "--no-sandbox",
             "--disable-setuid-sandbox",
@@ -25,6 +26,7 @@ const client = new Client({
         ]
     }
 });
+
 
 // Generate QR Code
 client.on('qr', (qr) => {
