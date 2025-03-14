@@ -16,17 +16,18 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
-        executablePath: "/opt/render/project/.render/chromium/chrome",
+        executablePath: process.env.CHROME_PATH || puppeteer.executablePath(), // Use system-installed Chrome
         args: [
             "--no-sandbox",
             "--disable-setuid-sandbox",
             "--disable-dev-shm-usage",
             "--disable-accelerated-2d-canvas",
-            "--disable-gpu"
+            "--disable-gpu",
+            "--single-process", // Important for Render
+            "--no-zygote"
         ]
     }
 });
-
 
 // Generate QR Code
 client.on('qr', (qr) => {
