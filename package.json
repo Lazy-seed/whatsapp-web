@@ -4,7 +4,8 @@
   "description": "WhatsApp bot using whatsapp-web.js",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "postinstall": "puppeteer install"
   },
   "dependencies": {
     "express": "^4.18.2",
