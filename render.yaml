@@ -4,10 +4,9 @@ services:
     env: node
     region: oregon
     buildCommand: |
-      apt-get update
-      apt-get install -y wget curl unzip fontconfig
-      wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-      dpkg -i google-chrome-stable_current_amd64.deb || apt-get -fy install
+      curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
+      echo 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main' | tee -a /etc/apt/sources.list.d/google-chrome.list
+      apt-get update && apt-get install -y google-chrome-stable
       npm install
     startCommand: node server.js
     envVars:
