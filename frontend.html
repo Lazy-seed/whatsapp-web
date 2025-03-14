@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Web QR Login</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body>
+    <h2>Scan the QR Code with WhatsApp</h2>
+    <img id="qrCode" src="" alt="QR Code" />
+
+    <h3>Messages:</h3>
+    <ul id="messages"></ul>
+    <h2>Chat History</h2>
+    <div id="chatHistory"></div>
+    
+    <script>
+        const socket = io('http://localhost:3000', { transports: ['websocket']});
+
+        socket.on('qr', (qr) => {
+            document.getElementById('qrCode').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qr)}`;
+        });
+
+        socket.on('ready', () => {
+            alert('WhatsApp Web is ready!');
+        });
+
+        socket.on('message', (msg) => {
+            const li = document.createElement('li');
+            li.textContent = `From ${msg.from}: ${msg.body}`;
+            document.getElementById('messages').appendChild(li);
+        });
+
+socket.on('chats', (chats) => {
+    const chatContainer = document.getElementById('chatHistory');
+    chatContainer.innerHTML = ""; // Clear previous messages
+
+    chats.forEach(chat => {
+        const chatDiv = document.createElement('div');
+        chatDiv.innerHTML = `<h3>${chat.name}</h3>`;
+        
+        chat.messages.forEach(msg => {
+            const msgDiv = document.createElement('p');
+            msgDiv.textContent = `[${new Date(msg.timestamp * 1000).toLocaleString()}] ${msg.from}: ${msg.body}`;
+            chatDiv.appendChild(msgDiv);
+        });
+
+        chatContainer.appendChild(chatDiv);
+    });
+});
+
+    </script>
+</body>
+</html>
